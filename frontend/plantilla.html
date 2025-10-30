@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script>
+  </script>
+  <meta charset="UTF-8">
+  <title>Real Sociedad</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+/* Icono info debajo del botón de música */
+.play-btn + .song-info-icon {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 32px);
+  transform: translate(-50%, 0);
+  width: 32px;
+  text-align: center;
+  font-size: 1.3em;
+  color: #0077cc;
+  z-index: 3;
+  margin-top: 0;
+}
+.song-info-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: -12px;
+  transform: translate(-50%, -100%);
+  background: #fff;
+  color: #003366;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  padding: 6px 12px;
+  font-size: 0.75em;
+  font-weight: normal;
+  min-width: 120px;
+  max-width: 220px;
+  white-space: pre-line;
+  pointer-events: auto;
+  z-index: 99999999999999999;
+}
+.song-info-icon:hover .song-info-tooltip,
+.song-info-icon:focus .song-info-tooltip {
+  display: block;
+}
+    body { font-family: Arial, sans-serif; background: #003366; margin: 0; padding: 0; }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 210px;
+      height: 100vh;
+      background: #002244;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding-top: 48px;
+      z-index: 100;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.08);
+    }
+    .sidebar a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 16px 32px;
+      width: 100%;
+      display: block;
+      border-left: 4px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .sidebar a.active, .sidebar a:hover {
+      background: #003366;
+      border-left: 4px solid #0077cc;
+    }
+    .main-content {
+      margin-left: 210px;
+      padding: 32px 0 0 0;
+    }
+    .players-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      justify-items: start;
+      margin-left: 40px;
+    }
+    .player-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      display: flex;
+      align-items: center;
+  gap: 32px;
+  padding: 18px 32px 18px 32px;
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 390px;
+  min-height: 110px;
+  position: relative;
+    }
+    .play-btn {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  margin-left: 0 !important;
+}
+.play-btn + .song-info-icon {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 32px);
+  transform: translate(-50%, 0);
+  width: 32px;
+  text-align: center;
+  font-size: 1.3em;
+  color: #0077cc;
+  z-index: 3;
+  margin-top: 0;
+}
+.player-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  min-width: 0;
+}
+.player-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #003366;
+  white-space: nowrap;
+  overflow: visible;
+  min-width: 0;
+}
+    .player-img {
+    /* Estilo para el botón de play/stop */
+    .play-btn {
+      background: #fff;
+      color: #003366;
+      border: none;
+      border-radius: 16px;
+      padding: 12px 24px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      font-size: 1.3em;
+      margin-left: 32px;
+      position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+    }
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #0077cc;
+      background: #eee;
+    }
+    .player-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+    .player-name {
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #003366;
+      white-space: nowrap;
+      overflow: visible;
+    }
+    .player-fullname {
+      font-size: 1em;
+      color: #222;
+      font-weight: normal;
+    }
+    .player-dorsal {
+      font-size: 1.1em;
+      color: #0077cc;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+    @media (max-width: 900px) {
+      .sidebar { width: 56px; padding-top: 24px; }
+      .sidebar a { font-size: 1em; padding: 12px 8px; }
+      .main-content { margin-left: 56px; }
+      .player-card { padding: 12px 8px; gap: 12px; }
+      .player-img { width: 48px; height: 48px; }
+    }
+
+    /* Móvil: una tarjeta por fila */
+    @media (max-width: 700px) {
+      .players-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+        margin-left: 12px;
+      }
+      .player-card {
+        max-width: 96vw;
+        width: 96vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <a href="plantilla.html" id="menu-plantilla" class="active">Plantilla</a>
+    <a href="hamaikakoa.html" id="menu-once">Crear once</a>
+  </div>
+  <div class="main-content">
+    <div style="display:flex; align-items:center; gap:16px; margin: 7px 0 0 32px;">
+      <label for="seasonSelect" id="seasonLabel" style="color:#fff; font-weight:bold; font-size:1.1em;">Temporada:</label>
+      <select id="seasonSelect" style="font-size:1em; border-radius:6px; padding:4px 12px;">
+        <option value="2025-26" selected>2025-26</option>
+        <option value="2024-25">2024-25</option>
+        <option value="2023-24">2023-24</option>
+  <!--
+        <option value="2022-23">2022-23</option>
+        <option value="2021-22">2021-22</option>
+  -->
+      </select>
+    </div>
+    <h2 id="plantillaTitle" style="color:#fff; font-weight:bold; margin-top:20px; margin-left:32px; margin-bottom:0px;"></h2>
+  <h2 id="porterosTitle" style="color:#fff; font-weight:bold; font-size:1.5em; margin-left:40px; margin-top:20px; margin-bottom:10px;"></h2>
+  <div class="players-grid" id="porterosContainer"></div>
+  <h2 id="defensasTitle" style="color:#fff; font-weight:bold; font-size:1.5em; margin-left:40px; margin-top:20px; margin-bottom:10px;"></h2>
+  <div class="players-grid" id="defensasContainer"></div>
+  <h2 id="centrocampistasTitle" style="color:#fff; font-weight:bold; font-size:1.5em; margin-left:40px; margin-top:20px; margin-bottom:10px;"></h2>
+  <div class="players-grid" id="centrocampistasContainer"></div>
+  <h2 id="delanterosTitle" style="color:#fff; font-weight:bold; font-size:1.5em; margin-left:40px; margin-top:20px; margin-bottom:10px;"></h2>
+  <div class="players-grid" id="delanterosContainer"></div>
+  <h2 id="entrenadoresTitle" style="color:#fff; font-weight:bold; margin-left:32px; margin-top:56px; margin-bottom:40px;"></h2>
+  <div class="players-grid" id="entrenadoresContainer"></div>
+  <h2 id="vendidosTitle" style="color:#fff; font-weight:bold; margin-left:32px; margin-top:56px; margin-bottom:40px;"></h2>
+  <div class="players-grid" id="vendidosContainer"></div>
+  <button id="langBtn" style="background:#fff; color:#003366; border-radius:8px; border:none; font-weight:bold; font-size:1em; padding:6px 18px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.12); position:fixed; top:18px; right:24px; z-index:200;">Eus</button>
+  </div>
+  <script>
+
+    // Banderas
+const flags = {
+  'Catalunya': 'https://upload.wikimedia.org/wikipedia/commons/f/fd/Estelada_dels_Pa%C3%AFsos_Catalans_independents.svg',
+  'Francia': 'https://upload.wikimedia.org/wikipedia/en/thumb/c/c3/Flag_of_France.svg/40px-Flag_of_France.svg.png',
+  'Islandia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Flag_of_Iceland.svg/40px-Flag_of_Iceland.svg.png',
+  'Surinam': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Flag_of_Suriname.svg/40px-Flag_of_Suriname.svg.png',
+  'España': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Flag_of_Spain.svg/40px-Flag_of_Spain.svg.png',
+  'Japón': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Flag_of_Japan.svg/40px-Flag_of_Japan.svg.png',
+  'Galicia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Flag_of_Galicia.svg/40px-Flag_of_Galicia.svg.png',
+  'Croacia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Flag_of_Croatia.svg/40px-Flag_of_Croatia.svg.png',
+  'Rusia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Flag_of_Russia.svg/40px-Flag_of_Russia.svg.png',
+  'Venezuela': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Flag_of_Venezuela.svg/40px-Flag_of_Venezuela.svg.png',
+  'Nigeria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Flag_of_Nigeria.svg/40px-Flag_of_Nigeria.svg.png',
+  'Mali': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Flag_of_Mali.svg/40px-Flag_of_Mali.svg.png',
+  'Portugal': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Flag_of_Portugal_%28official%29.svg/40px-Flag_of_Portugal_%28official%29.svg.png',
+  'Armenia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Flag_of_Armenia.svg/40px-Flag_of_Armenia.svg.png',
+  'Austria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Flag_of_Austria.svg/40px-Flag_of_Austria.svg.png',
+  'Netherlands': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Flag_of_the_Netherlands.svg/40px-Flag_of_the_Netherlands.svg.png',
+  'Cameroon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Flag_of_Cameroon.svg/40px-Flag_of_Cameroon.svg.png',
+  'Marruecos': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Flag_of_Morocco.svg/40px-Flag_of_Morocco.svg.png',
+  'Escocia': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Flag_of_Scotland.svg/40px-Flag_of_Scotland.svg.png',
+  'IslMan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Flag_of_the_Isle_of_Mann.svg/40px-Flag_of_the_Isle_of_Mann.svg.png',
+  'Brittany': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7d/Flag_of_Brittany.svg/40px-Flag_of_Brittany.svg.png',
+  'Inglaterra': 'https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/40px-Flag_of_England.svg.png',
+  'Ivory Coast': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Flag_of_C%C3%B4te_d%27Ivoire.svg/40px-Flag_of_C%C3%B4te_d%27Ivoire.svg.png',
+  'Norway': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Flag_of_Norway.svg/40px-Flag_of_Norway.svg.png',
+  'Euskal Herria': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Flag_of_the_Basque_Country.svg/40px-Flag_of_the_Basque_Country.svg.png',
+  'Nafarroa': 'https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/Nafarroa.png',
+  'Gipuzkoa': 'https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/Gipuzkoa.png',
+  'Bizkaia': 'https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/Bizkaia.png',
+  'Araba': 'https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/Araba.png'
+};
+
+// --- NUEVO: gestión de datos por temporada desde un solo archivo ---
+let jugadores = [], entrenadores = [], salidas = [];
+
+async function cargarDatosTemporada(temporada) {
+  // Carga el archivo único de la carpeta temporadas
+  const data = await fetch(`https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/temporadas/plantilla_${temporada}.json`).then(r => r.json());
+  jugadores = data.filter(ind => ind.tipo === 'jugador');
+  entrenadores = data.filter(ind => ind.tipo === 'entrenador');
+  salidas = data.filter(ind => ind.tipo === 'salida');
+  renderPlayers();
+  renderEntrenadores();
+  renderVendidos();
+  setupPlayButtons();
+}
+
+// Llama a cargarDatosTemporada cuando cambie el selector de temporada
+const temporadaSelect = document.getElementById('seasonSelect');
+if (temporadaSelect) {
+  temporadaSelect.addEventListener('change', function() {
+    cargarDatosTemporada(this.value);
+  });
+  // Cargar la temporada inicial
+  cargarDatosTemporada(temporadaSelect.value);
+} else {
+  // Si no hay selector, cargar por defecto 2025
+  cargarDatosTemporada('2025-26');
+}
+
+    // Traducciones
+    const translations = {
+      es: {
+        dorsal: 'Dorsal',
+        menuOnce: 'Crear once',
+        menuPlantilla: 'Plantilla',
+        plantillaTitle: 'En plantilla',
+        porterosTitle: 'Porteros',
+        defensasTitle: 'Defensas',
+        centrocampistasTitle: 'Centrocampistas',
+        delanterosTitle: 'Delanteros',
+        entrenadoresTitle: 'Entrenadores',
+        vendidosTitle: 'Vendidos/Cedidos',
+        transferido: 'Transferido',
+        cedido: 'Cedido',
+        season: 'Temporada:'
+      },
+      eu: {
+        dorsal: 'Dortsala',
+        menuOnce: 'Hamaikakoa sortu',
+        menuPlantilla: 'Taldea',
+        plantillaTitle: 'Taldekideak',
+        porterosTitle: 'Atezainak',
+        defensasTitle: 'Atzelariak',
+        centrocampistasTitle: 'Erdilariak',
+        delanterosTitle: 'Aurrelariak',
+        entrenadoresTitle: 'Entrenatzaileak',
+        vendidosTitle: 'Salduta/Utzita',
+        transferido: 'Salduta',
+        cedido: 'Utzita',
+        season: 'Denboraldia:'
+      }
+    };
+    let currentLang = localStorage.getItem('lang') || 'es';
+
+    function getFlagStyle(pais) {
+      const noDeform = ['Nafarroa', 'Gipuzkoa', 'Bizkaia', 'Araba'];
+      const base = 'vertical-align:middle; width:22px; height:16px; border-radius:2px; box-shadow:0 1px 2px rgba(0,0,0,0.10);';
+      return noDeform.includes(pais) ? base + ' object-fit:contain;' : base;
+    }
+
+    function renderPlayers() {
+  const posList = [
+    { pos: 'POR', containerId: 'porterosContainer' },
+    { pos: 'DEF', containerId: 'defensasContainer' },
+    { pos: 'MED', containerId: 'centrocampistasContainer' },
+    { pos: 'DEL', containerId: 'delanterosContainer' }
+  ];
+  const temporadaCarpeta = temporadaSelect && temporadaSelect.value ? temporadaSelect.value : '2025-26';
+  const is202526 = temporadaSelect && temporadaSelect.value === '2025-26';
+  posList.forEach(({ pos, containerId }) => {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    jugadores.forEach((player, idx) => {
+      if (player.pos !== pos) return;
+      const card = document.createElement('div');
+      card.className = 'player-card';
+      card.innerHTML = `
+        <img class="player-img" src="https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/${temporadaCarpeta}/${player.url_name}.jpg" alt="${player.name}">
+        <div class="player-info">
+          <span class="player-name">
+            <img src="${flags[player.pais]}" alt="flag" style="${getFlagStyle(player.pais)} margin-right:2px;">
+            ${player.pais2 ? `<img src="${flags[player.pais2]}" alt="flag2" style="${getFlagStyle(player.pais2)} margin-left:2px;">` : ''}
+            ${player.pais3 ? `<img src="${flags[player.pais3]}" alt="flag3" style="${getFlagStyle(player.pais3)} margin-left:2px;">` : ''}
+            ${player.pais4 ? `<img src="${flags[player.pais4]}" alt="flag4" style="${getFlagStyle(player.pais4)} margin-left:2px;">` : ''}
+            ${player.name}
+          </span>
+          <span class="player-fullname">${player.fullname}</span>
+          <span class="player-dorsal">${player.dorsal ? translations[currentLang].dorsal + ': ' + player.dorsal : ''}</span>
+        </div>
+        ${is202526 ? `<div style=\"display: flex; align-items: center; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); gap: 0;\">
+          <button class=\"play-btn\" data-idx=\"${idx}\" style=\"margin-right: -20px;\">▶️</button>
+          <div class=\"song-info-icon\" tabindex=\"0\" style=\"margin-left: -28px;\">ⓘ<span class=\"song-info-tooltip\"></span></div>
+        </div>` : ''}
+      `;
+      // Tooltip explicación canción desde el JSON (solo si hay icono)
+      const infoIcon = card.querySelector('.song-info-icon');
+      if (infoIcon) {
+        infoIcon.addEventListener('mouseenter', function() {
+          const expl = player.cancion;
+          if (expl && expl[currentLang]) {
+            infoIcon.querySelector('.song-info-tooltip').textContent = expl[currentLang];
+            infoIcon.querySelector('.song-info-tooltip').style.display = 'block';
+          }
+        });
+        infoIcon.addEventListener('mouseleave', function() {
+          infoIcon.querySelector('.song-info-tooltip').style.display = 'none';
+        });
+      }
+      container.appendChild(card);
+    });
+  });
+}
+
+function renderEntrenadores() {
+  const container = document.getElementById('entrenadoresContainer');
+  container.innerHTML = '';
+  const temporadaCarpeta = temporadaSelect && temporadaSelect.value ? temporadaSelect.value : '2025-26';
+  const is202526 = temporadaSelect && temporadaSelect.value === '2025-26';
+  entrenadores.forEach((coach, idx) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.innerHTML = `
+      <img class="player-img" src="https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/img/${temporadaCarpeta}/${coach.url_name}.jpg" alt="${coach.name}">
+      <div class="player-info">
+        <span class="player-name">
+          <img src="${flags[coach.pais]}" alt="flag" style="${getFlagStyle(coach.pais)} margin-right:2px;">
+          ${coach.pais2 ? `<img src=\"${flags[coach.pais2]}\" alt=\"flag2\" style=\"${getFlagStyle(coach.pais2)} margin-left:2px;\">` : ''}
+          ${coach.pais3 ? `<img src=\"${flags[coach.pais3]}\" alt=\"flag3\" style=\"${getFlagStyle(coach.pais3)} margin-left:2px;\">` : ''}
+          ${coach.pais4 ? `<img src=\"${flags[coach.pais4]}\" alt=\"flag4\" style=\"${getFlagStyle(coach.pais4)} margin-left:2px;\">` : ''}
+          ${coach.name}
+        </span>
+        <span class="player-fullname">${coach.fullname}</span>
+        <span class="player-dorsal">${coach.rol[currentLang]}</span>
+      </div>
+      ${is202526 ? `<div style=\"display: flex; align-items: center; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); gap: 0;\">
+        <button class=\"play-btn\" data-idx=\"e${idx}\" style=\"margin-right: -20px;\">▶️</button>
+        <div class=\"song-info-icon\" tabindex=\"0\" style=\"margin-left: -28px;\">ⓘ<span class=\"song-info-tooltip\"></span></div>
+      </div>` : ''}
+    `;
+    const infoIcon = card.querySelector('.song-info-icon');
+    if (infoIcon) {
+      infoIcon.addEventListener('mouseenter', function() {
+        const expl = coach.cancion;
+        if (expl && expl[currentLang]) {
+          infoIcon.querySelector('.song-info-tooltip').textContent = expl[currentLang];
+          infoIcon.querySelector('.song-info-tooltip').style.display = 'block';
+        }
+      });
+      infoIcon.addEventListener('mouseleave', function() {
+        infoIcon.querySelector('.song-info-tooltip').style.display = 'none';
+      });
+    }
+    container.appendChild(card);
+  });
+}
+
+function renderVendidos() {
+  const container = document.getElementById('vendidosContainer');
+  container.innerHTML = '';
+  const temporadaCarpeta = temporadaSelect && temporadaSelect.value ? temporadaSelect.value : '2025-26';
+  const is202526 = temporadaSelect && temporadaSelect.value === '2025-26';
+  salidas.forEach((player, idx) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.innerHTML = `
+      <img class="player-img" src="https://raw.githubusercontent.com/IbaiO/sistemen-administrazioa/main/frontend/assets/img/${temporadaCarpeta}/${player.url_name}.jpg" alt="${player.name}">
+      <div class="player-info">
+        <span class="player-name">
+          <img src="${flags[player.pais]}" alt="flag" style="${getFlagStyle(player.pais)} margin-right:2px;">
+          ${player.pais2 ? `<img src="${flags[player.pais2]}" alt="flag2" style="${getFlagStyle(player.pais2)} margin-left:2px;">` : ''}
+            ${player.pais3 ? `<img src="${flags[player.pais3]}" alt="flag3" style="${getFlagStyle(player.pais3)} margin-left:2px;">` : ''}
+            ${player.pais4 ? `<img src="${flags[player.pais4]}" alt="flag4" style="${getFlagStyle(player.pais4)} margin-left:2px;">` : ''}
+            ${player.name}
+        </span>
+        <span class="player-fullname">${player.fullname}</span>
+        <span class="player-dorsal">${player.status[currentLang]}</span>
+      </div>
+      ${is202526 ? `<div style=\"display: flex; align-items: center; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); gap: 0;\">
+        <button class=\"play-btn\" data-idx=\"v${idx}\" style=\"margin-right: -20px;\">▶️</button>
+        <div class=\"song-info-icon\" tabindex=\"0\" style=\"margin-left: -28px;\">ⓘ<span class=\"song-info-tooltip\"></span></div>
+      </div>` : ''}
+    `;
+    const infoIcon = card.querySelector('.song-info-icon');
+    if (infoIcon) {
+      infoIcon.addEventListener('mouseenter', function() {
+        const expl = player.cancion;
+        if (expl && expl[currentLang]) {
+          infoIcon.querySelector('.song-info-tooltip').textContent = expl[currentLang];
+          infoIcon.querySelector('.song-info-tooltip').style.display = 'block';
+        }
+      });
+      infoIcon.addEventListener('mouseleave', function() {
+        infoIcon.querySelector('.song-info-tooltip').style.display = 'none';
+      });
+    }
+    container.appendChild(card);
+  });
+}
+// Reproductor global
+    let currentAudio = null;
+    let currentBtn = null;
+    let audioPositions = {};
+    function getSongUrl(player, isVendido) {
+      if (!player.url_name) return null;
+      return `https://raw.githubusercontent.com/OriyokoIjitua/TwReal/main/mp3/${player.url_name}.mp3`;
+    }
+    function setupPlayButtons() {
+      document.querySelectorAll('.play-btn').forEach(btn => {
+        btn.onclick = function() {
+          let idx = btn.getAttribute('data-idx');
+          let player, isVendido = false, isEntrenador = false;
+            if (idx.startsWith('v')) {
+              player = salidas[parseInt(idx.slice(1))];
+              isVendido = true;
+            } else if (idx.startsWith('e')) {
+              player = entrenadores[parseInt(idx.slice(1))];
+              isEntrenador = true;
+            } else {
+              player = jugadores[parseInt(idx)];
+          }
+          let url = getSongUrl(player, isVendido || isEntrenador);
+          if (!url) return;
+          // Si ya está sonando este audio, pausar/reanudar
+          if (currentAudio && currentAudio.src === url) {
+            if (currentAudio.paused) {
+              currentAudio.play();
+              btn.textContent = '⏹️';
+            } else {
+              currentAudio.pause();
+              btn.textContent = '▶️';
+            }
+            return;
+          }
+          // Parar el anterior
+          if (currentAudio) {
+            currentAudio.pause();
+            if (currentBtn) currentBtn.textContent = '▶️';
+          }
+          // Crear nuevo audio
+          if (!audioPositions[url]) audioPositions[url] = 0;
+          currentAudio = new Audio(url);
+          currentAudio.currentTime = audioPositions[url];
+          currentBtn = btn;
+          btn.textContent = '⏹️';
+          currentAudio.play();
+          currentAudio.onended = function() {
+            btn.textContent = '▶️';
+            audioPositions[url] = 0;
+            currentAudio = null;
+            currentBtn = null;
+          };
+          currentAudio.onpause = function() {
+            audioPositions[url] = currentAudio.currentTime;
+            btn.textContent = '▶️';
+          };
+        };
+      });
+    }
+    
+    function updateLangBtn() {
+  // Actualizar menú lateral
+  document.getElementById('menu-once').textContent = translations[currentLang].menuOnce;
+  document.getElementById('menu-plantilla').textContent = translations[currentLang].menuPlantilla;
+  // Actualizar títulos
+  document.getElementById('plantillaTitle').textContent = translations[currentLang].plantillaTitle;
+  document.getElementById('vendidosTitle').textContent = translations[currentLang].vendidosTitle;
+  document.getElementById('porterosTitle').textContent = translations[currentLang].porterosTitle;
+  document.getElementById('defensasTitle').textContent = translations[currentLang].defensasTitle;
+  document.getElementById('centrocampistasTitle').textContent = translations[currentLang].centrocampistasTitle;
+  document.getElementById('delanterosTitle').textContent = translations[currentLang].delanterosTitle;
+  document.getElementById('entrenadoresTitle').textContent = translations[currentLang].entrenadoresTitle;
+  // Actualizar botón idioma
+  document.getElementById('langBtn').textContent = currentLang === 'es' ? 'Eus' : 'Cast';
+  // Cambiar label temporada
+  if (document.getElementById('seasonLabel')) {
+    document.getElementById('seasonLabel').textContent = translations[currentLang].season;
+  }
+  renderPlayers();
+  renderEntrenadores();
+  renderVendidos();
+  setupPlayButtons();
+}
+    document.getElementById('langBtn').onclick = function() {
+  currentLang = currentLang === 'es' ? 'eu' : 'es';
+  localStorage.setItem('lang', currentLang); // Guardar idioma
+  updateLangBtn();
+    };
+    updateLangBtn();
+  </script>
+</body>
+</html>
